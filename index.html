@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Bed Wars Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        #gameContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        #gameArea {
+            border: 1px solid #ccc;
+            width: 600px;
+            height: 400px;
+            background-color: #ddd;
+            position: relative;
+        }
+        .bed {
+            width: 50px;
+            height: 50px;
+            background-color: #f00;
+            position: absolute;
+        }
+        .player {
+            width: 20px;
+            height: 20px;
+            background-color: #00f;
+            position: absolute;
+            border-radius: 50%;
+        }
+        #controls {
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="gameArea">
+            <!-- Game elements will be dynamically inserted here -->
+        </div>
+        <div id="controls">
+            <button onclick="movePlayer('up')">Move Up</button>
+            <button onclick="movePlayer('down')">Move Down</button>
+            <button onclick="movePlayer('left')">Move Left</button>
+            <button onclick="movePlayer('right')">Move Right</button>
+        </div>
+    </div>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        const gameArea = document.getElementById('gameArea');
+        const playerSize = 20;
+        const bedSize = 50;
+        const moveAmount = 10;
+
+        // Function to move the player
+        function movePlayer(direction) {
+            socket.emit('movePlayer', direction);
+        }
+
+        socket.on('updateGame', (gameState) => {
+            gameArea.innerHTML = ''; // Clear previous game elements
+
+            // Add beds
+            gameState.beds.forEach(bed => {
+                const bedElement = document.createElement('div');
+                bedElement.className = 'bed';
+                bedElement.style.top = `${bed.y}px`;
+                bedElement.style.left = `${bed.x}px`;
+                gameArea.appendChild(bedElement);
+            });
+
+            // Add players
+            gameState.players.forEach(player => {
+                const playerElement = document.createElement('div');
+                playerElement.className = 'player';
+                playerElement.style.top = `${player.y}px`;
+                playerElement.style.left = `${player.x}px`;
+                gameArea.appendChild(playerElement);
+            });
+        });
+
+        // Simulate player movement and send updates to the server
+        socket.on('playerMoved', (player) => {
+            // Handle player movement on client side
+        });
+
+        window.onload = () => {
+            const nickname = prompt('Enter your nickname');
+            if (nickname) {
+                socket.emit('setNickname', nickname);
+            }
+        };
+    </script>
+</body>
+</html>
